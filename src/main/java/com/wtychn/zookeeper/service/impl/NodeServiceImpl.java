@@ -8,6 +8,7 @@ import org.apache.zookeeper.ZooKeeper;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -28,11 +29,10 @@ public class NodeServiceImpl implements NodeService {
     }
 
     @Override
-    public void update(Node node, ZooKeeper zooKeeper) throws InterruptedException, KeeperException {
-        System.out.println(node);
-        System.out.println(node.getPath());
-        System.out.println(node.getValue()[0]);
-        ZookeeperUtils.setNode(node.getValue()[0], zooKeeper, node.getValue()[1]);
+    public void update(String path, String[] value, ZooKeeper zooKeeper) throws InterruptedException, KeeperException {
+        System.out.println(path);
+        System.out.println(Arrays.toString(value));
+        ZookeeperUtils.setNode(path, zooKeeper, value[0]);
     }
 
     @Override

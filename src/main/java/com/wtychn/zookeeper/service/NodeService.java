@@ -12,7 +12,7 @@ public interface NodeService {
 
     void delete(String path, ZooKeeper zooKeeper) throws InterruptedException, KeeperException;
 
-    void update(Node node, ZooKeeper zooKeeper) throws InterruptedException, KeeperException;
+    void update(String path, String[] value, ZooKeeper zooKeeper) throws InterruptedException, KeeperException;
 
     List<String> select(String path, ZooKeeper zooKeeper) throws Exception;
 

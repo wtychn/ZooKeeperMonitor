@@ -10,8 +10,10 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 @RestController
@@ -26,19 +28,19 @@ public class ZookeeperController {
     @Autowired
     private NodeService nodeService;
 
-    @RequestMapping("/retestadd")
-    public String index() throws IOException {
-        System.out.println("test");
-        WebSocketServer.sendInfo("A122.51.129.180:2182");
-        return "helloword!";
-    }
-
-    @RequestMapping("/retestmin")
-    public String index1() throws IOException {
-        System.out.println("test");
-        WebSocketServer.sendInfo("M122.51.129.180:2182");
-        return "helloword!";
-    }
+//    @RequestMapping("/retestadd")
+//    public String index() throws IOException {
+//        System.out.println("test");
+//        WebSocketServer.sendInfo("A122.51.129.180:2182");
+//        return "helloword!";
+//    }
+//
+//    @RequestMapping("/retestmin")
+//    public String index1() throws IOException {
+//        System.out.println("test");
+//        WebSocketServer.sendInfo("M122.51.129.180:2182");
+//        return "helloword!";
+//    }
 
     @GetMapping("/server/{addresses}")
     @ApiOperation(value = "获取 zk 服务器信息")
@@ -57,9 +59,9 @@ public class ZookeeperController {
         return serverService.getServerTree(address);
     }
 
-    @GetMapping("/node/{path}")
+    @GetMapping("node")
     @ApiOperation(value = "查询节点")
-    public CommonResult queryNode(@PathVariable("path") String path) throws Exception {
+    public CommonResult queryNode(@RequestParam(value = "path") String path) throws Exception {
         CommonResult commonResult = new CommonResult();
         commonResult.setData(nodeService.select(path, zooKeeper));
         commonResult.setCode(200);
@@ -67,7 +69,7 @@ public class ZookeeperController {
         return commonResult;
     }
 
-    @PostMapping("/node")
+    @PostMapping("node")
     @ApiOperation(value = "增加节点")
     public CommonResult addNode(Node node) throws Exception {
         nodeService.add(node, zooKeeper);
@@ -78,9 +80,9 @@ public class ZookeeperController {
         return commonResult;
     }
 
-    @DeleteMapping("/node/{path}")
+    @DeleteMapping("node")
     @ApiOperation(value = "删除节点")
-    public CommonResult deleteNode(@PathVariable("path") String path) throws KeeperException, InterruptedException {
+    public CommonResult deleteNode(@RequestParam(value = "path") String path) throws KeeperException, InterruptedException {
         nodeService.delete(path, zooKeeper);
 
         CommonResult commonResult = new CommonResult();
@@ -89,10 +91,10 @@ public class ZookeeperController {
         return commonResult;
     }
 
-    @PutMapping("/node")
+    @PutMapping("node")
     @ApiOperation(value = "改动节点")
-    public CommonResult modifyNode(@RequestBody Node node) throws KeeperException, InterruptedException {
-        nodeService.update(node, zooKeeper);
+    public CommonResult modifyNode(HttpServletRequest request) throws KeeperException, InterruptedException {
+        nodeService.update(request.getParameter("path"), request.getParameterValues("value"), zooKeeper);
 
         CommonResult commonResult = new CommonResult();
         commonResult.setCode(200);
