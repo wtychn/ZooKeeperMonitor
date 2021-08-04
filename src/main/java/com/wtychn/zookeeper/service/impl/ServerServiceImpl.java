@@ -4,6 +4,7 @@ import com.wtychn.zookeeper.Utils.ZookeeperUtils;
 import com.wtychn.zookeeper.Watcher.ChildrenNodeWatcherThread;
 import com.wtychn.zookeeper.Watcher.NodeDataChangedWatcherThread;
 import com.wtychn.zookeeper.Watcher.GetAllNode;
+import com.wtychn.zookeeper.controller.ZookeeperController;
 import com.wtychn.zookeeper.pojo.CommonResult;
 import com.wtychn.zookeeper.pojo.ServerInfo;
 import com.wtychn.zookeeper.pojo.ServerTree;
@@ -59,13 +60,13 @@ public class ServerServiceImpl implements ServerService {
     }
 
     @Override
-    public CommonResult getServerTree(String addresses, ZooKeeper zooKeeper) throws Exception {
+    public CommonResult getServerTree(String address) throws Exception {
         try {
             // 计数器对象
             CountDownLatch countDownLatch = new CountDownLatch(1);
-            if (zooKeeper == null) {
+            if (ZookeeperController.zooKeeper == null) {
 
-                zooKeeper = new ZooKeeper(addresses, 50000, event -> {
+                ZookeeperController.zooKeeper = new ZooKeeper(address, 50000, event -> {
                     if (event.getState().equals(Watcher.Event.KeeperState.SyncConnected)) {
                         System.out.println("连接创建成功!");
                         countDownLatch.countDown();
@@ -81,9 +82,9 @@ public class ServerServiceImpl implements ServerService {
 
         ZookeeperUtils.directory.clear();
 
-        assert zooKeeper != null;
-        GetAllNode.ls("/", zooKeeper);
-        ZookeeperUtils.ls("/", zooKeeper);
+        assert ZookeeperController.zooKeeper != null;
+        GetAllNode.ls("/", ZookeeperController.zooKeeper);
+        ZookeeperUtils.ls("/", ZookeeperController.zooKeeper);
         System.out.println("===================================");
         ServerTree root = transfer(ZookeeperUtils.directory);
 

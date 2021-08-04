@@ -11,8 +11,6 @@ import java.util.concurrent.CountDownLatch;
 
 public class AllNodeListWatcher {
     public static ZooKeeper zooKeeper;
-    @Value(value = "${zookeeper.address}")
-    static String address;
 
     public static void watcherAllGetChild() throws Exception {
         // arg1:节点的路径
@@ -20,7 +18,7 @@ public class AllNodeListWatcher {
         GetAllNode1 a = new GetAllNode1();
         a.ls("/", ZookeeperController.zooKeeper);
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        zooKeeper = new ZooKeeper(address, 50000, event -> {
+        zooKeeper = new ZooKeeper(ZookeeperController.nowAddress, 50000, event -> {
             // 连接成功
             System.out.println("path=" + event.getPath());
             System.out.println("eventType=" + event.getType());
