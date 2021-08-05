@@ -1,7 +1,6 @@
 package com.wtychn.zookeeper.service;
 
 import com.wtychn.zookeeper.pojo.CommonResult;
-import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
 

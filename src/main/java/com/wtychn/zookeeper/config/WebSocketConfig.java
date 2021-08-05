@@ -1,4 +1,4 @@
-package com.wtychn.zookeeper.Utils;
+package com.wtychn.zookeeper.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;

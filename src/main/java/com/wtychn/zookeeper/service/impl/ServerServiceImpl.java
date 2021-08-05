@@ -1,55 +1,50 @@
 package com.wtychn.zookeeper.service.impl;
 
-import com.wtychn.zookeeper.Utils.ZookeeperUtils;
-import com.wtychn.zookeeper.Watcher.ChildrenNodeWatcherThread;
-import com.wtychn.zookeeper.Watcher.NodeDataChangedWatcherThread;
-import com.wtychn.zookeeper.Watcher.GetAllNode;
+import com.wtychn.zookeeper.Utils.GetAllNode;
+import com.wtychn.zookeeper.Utils.ZooKeeperUtil;
+import com.wtychn.zookeeper.Watcher.NodeWatcher;
 import com.wtychn.zookeeper.controller.ZookeeperController;
 import com.wtychn.zookeeper.pojo.CommonResult;
 import com.wtychn.zookeeper.pojo.ServerInfo;
 import com.wtychn.zookeeper.pojo.ServerTree;
 import com.wtychn.zookeeper.service.ServerService;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 @Service
 public class ServerServiceImpl implements ServerService {
 
-    public static Thread getNodeChangedWatcherThread;
-    public static Thread childrenNodeWatcherThread;
+    public static Thread watcherThread;
 
     @Override
     public CommonResult getServerList(String addresses) throws IOException, InterruptedException {
-        String[] addressList = addresses.split(",");
+//        String[] addressList = addresses.split(",");
         List<ServerInfo> serverlist = new ArrayList<>();
-        for (int i = 0; i < addressList.length; i++) {
-            serverlist.add(new ServerInfo());
-            serverlist.get(i).setAdress(addressList[i]);
-            serverlist.get(i).setClusterState("normal");
-            String[] hostPort = addressList[i].split(":");
-            // 计数器对象
-            CountDownLatch countDownLatch = new CountDownLatch(1);
-            int curIdx = i;
-            new ZooKeeper(addressList[curIdx], 5000, event -> {
-                if (event.getState().equals(Watcher.Event.KeeperState.SyncConnected)) {
-                    serverlist.get(curIdx).setNodeState("on service");
-                    if (event.getState().equals(Watcher.Event.KeeperState.Disconnected)) {
-                        serverlist.get(curIdx).setNodeState("off line");
-                    }
-                    countDownLatch.countDown();
-                }
-            });
-            // 主线程阻塞等待连接对象的创建成功
-            countDownLatch.await();
-
-            serverlist.get(i).setNodeRole(ZookeeperUtils.serverStatus(hostPort[0], hostPort[1]));
-        }
+//        for (int i = 0; i < addressList.length; i++) {
+//            serverlist.add(new ServerInfo());
+//            serverlist.get(i).setAdress(addressList[i]);
+//            serverlist.get(i).setClusterState("normal");
+//            String[] hostPort = addressList[i].split(":");
+//            // 计数器对象
+//            CountDownLatch countDownLatch = new CountDownLatch(1);
+//            int curIdx = i;
+//            new ZooKeeper(addressList[curIdx], 5000, event -> {
+//                if (event.getState().equals(Watcher.Event.KeeperState.SyncConnected)) {
+//                    serverlist.get(curIdx).setNodeState("on service");
+//                    if (event.getState().equals(Watcher.Event.KeeperState.Disconnected)) {
+//                        serverlist.get(curIdx).setNodeState("off line");
+//                    }
+//                    countDownLatch.countDown();
+//                }
+//            });
+//            // 主线程阻塞等待连接对象的创建成功
+//            countDownLatch.await();
+//
+//            serverlist.get(i).setNodeRole(ZookeeperUtils.serverStatus(hostPort[0], hostPort[1]));
+//        }
 
         CommonResult commonResult = new CommonResult();
         commonResult.setCode(200);
@@ -61,49 +56,25 @@ public class ServerServiceImpl implements ServerService {
 
     @Override
     public CommonResult getServerTree(String address) throws Exception {
-        try {
-            // 计数器对象
-            CountDownLatch countDownLatch = new CountDownLatch(1);
-            if (ZookeeperController.zooKeeper == null) {
+        ZooKeeperUtil zooKeeperUtil = new ZooKeeperUtil();
 
-                ZookeeperController.zooKeeper = new ZooKeeper(address, 50000, event -> {
-                    if (event.getState().equals(Watcher.Event.KeeperState.SyncConnected)) {
-                        System.out.println("连接创建成功!");
-                        countDownLatch.countDown();
-                    }
-                });
-                // 主线程阻塞等待连接对象的创建成功
-                countDownLatch.await();
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        if (ZookeeperController.client == null) {
+            zooKeeperUtil.connect(address);
+            System.out.println("zookeeper 服务器连接成功！");
+            zooKeeperUtil.register();
         }
 
-        ZookeeperUtils.directory.clear();
+        ServerTree root = transfer(new GetAllNode().ls("/"));
 
-        assert ZookeeperController.zooKeeper != null;
-        GetAllNode.ls("/", ZookeeperController.zooKeeper);
-        ZookeeperUtils.ls("/", ZookeeperController.zooKeeper);
-        System.out.println("===================================");
-        ServerTree root = transfer(ZookeeperUtils.directory);
-
-        if (childrenNodeWatcherThread == null) {
-            childrenNodeWatcherThread = new ChildrenNodeWatcherThread();
-            childrenNodeWatcherThread.start();
-        }
-        if (getNodeChangedWatcherThread == null) {
-            getNodeChangedWatcherThread = new NodeDataChangedWatcherThread();
-            getNodeChangedWatcherThread.start();
+        if (watcherThread == null) {
+            watcherThread = new Thread(new NodeWatcher());
+            watcherThread.start();
         }
 
-        ZookeeperUtils.directory.clear();
-        List<ServerTree> resData = new ArrayList<>();
-        resData.add(root);
         CommonResult commonResult = new CommonResult();
         commonResult.setCode(200);
         commonResult.setMsg("Success");
-        commonResult.setData(resData);
+        commonResult.setData(root);
         return commonResult;
     }
 

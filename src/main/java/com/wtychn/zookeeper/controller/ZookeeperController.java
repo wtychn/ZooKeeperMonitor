@@ -1,16 +1,13 @@
 package com.wtychn.zookeeper.controller;
 
-import com.wtychn.zookeeper.Utils.Node;
-import com.wtychn.zookeeper.Utils.WebSocketServer;
+import com.wtychn.zookeeper.pojo.Node;
 import com.wtychn.zookeeper.pojo.CommonResult;
 import com.wtychn.zookeeper.service.NodeService;
 import com.wtychn.zookeeper.service.ServerService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.ZooKeeper;
+import org.apache.curator.framework.CuratorFramework;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +17,7 @@ import java.io.IOException;
 @Api(value = "zookeeper 监控")
 public class ZookeeperController {
 
-    public static ZooKeeper zooKeeper;
+    public static CuratorFramework client;
     public static String nowAddress;
 
     @Autowired
@@ -59,11 +56,22 @@ public class ZookeeperController {
         return serverService.getServerTree(address);
     }
 
+    @DeleteMapping("/quit")
+    @ApiOperation(value = "断开当前连接")
+    public CommonResult quitConnection() {
+        client = null;
+
+        CommonResult commonResult = new CommonResult();
+        commonResult.setCode(200);
+        commonResult.setMsg("Success");
+        return commonResult;
+    }
+
     @GetMapping("node")
     @ApiOperation(value = "查询节点")
     public CommonResult queryNode(@RequestParam(value = "path") String path) throws Exception {
         CommonResult commonResult = new CommonResult();
-        commonResult.setData(nodeService.select(path, zooKeeper));
+        commonResult.setData(nodeService.select(path));
         commonResult.setCode(200);
         commonResult.setMsg("Success");
         return commonResult;
@@ -72,7 +80,7 @@ public class ZookeeperController {
     @PostMapping("node")
     @ApiOperation(value = "增加节点")
     public CommonResult addNode(Node node) throws Exception {
-        nodeService.add(node, zooKeeper);
+        nodeService.add(node);
 
         CommonResult commonResult = new CommonResult();
         commonResult.setCode(200);
@@ -82,23 +90,23 @@ public class ZookeeperController {
 
     @DeleteMapping("node")
     @ApiOperation(value = "删除节点")
-    public CommonResult deleteNode(@RequestParam(value = "path") String path) throws KeeperException, InterruptedException {
-        nodeService.delete(path, zooKeeper);
+    public CommonResult deleteNode(@RequestParam(value = "path") String path) throws Exception {
+        String msg = nodeService.delete(path);
 
         CommonResult commonResult = new CommonResult();
         commonResult.setCode(200);
-        commonResult.setMsg("Success");
+        commonResult.setMsg(msg);
         return commonResult;
     }
 
     @PutMapping("node")
     @ApiOperation(value = "改动节点")
-    public CommonResult modifyNode(HttpServletRequest request) throws KeeperException, InterruptedException {
-        nodeService.update(request.getParameter("path"), request.getParameterValues("value"), zooKeeper);
+    public CommonResult modifyNode(HttpServletRequest request) throws Exception {
+        String msg = nodeService.update(request.getParameter("path"), request.getParameter("value"));
 
         CommonResult commonResult = new CommonResult();
         commonResult.setCode(200);
-        commonResult.setMsg("Success");
+        commonResult.setMsg(msg);
         return commonResult;
     }
 

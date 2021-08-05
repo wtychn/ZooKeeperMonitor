@@ -1,19 +1,15 @@
 package com.wtychn.zookeeper.service;
 
-import com.wtychn.zookeeper.Utils.Node;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.ZooKeeper;
-
-import java.util.List;
+import com.wtychn.zookeeper.pojo.Node;
 
 public interface NodeService {
 
-    void add(Node node, ZooKeeper zooKeeper) throws Exception;
+    void add(Node node) throws Exception;
 
-    void delete(String path, ZooKeeper zooKeeper) throws InterruptedException, KeeperException;
+    String delete(String path) throws Exception;
 
-    void update(String path, String[] value, ZooKeeper zooKeeper) throws InterruptedException, KeeperException;
+    String update(String path, String value) throws Exception;
 
-    List<String> select(String path, ZooKeeper zooKeeper) throws Exception;
+    String select(String path) throws Exception;
 
 }

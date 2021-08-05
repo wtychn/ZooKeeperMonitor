@@ -1,4 +1,4 @@
-package com.wtychn.zookeeper.Utils;
+package com.wtychn.zookeeper.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +11,6 @@ public class Node {
 
     private String address;
     private String path;
-    private String[] value;
+    private String value;
 
 }
