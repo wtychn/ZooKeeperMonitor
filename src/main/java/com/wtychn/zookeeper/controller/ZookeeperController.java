@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Objects;
 
 @RestController
 @Api(value = "zookeeper 监控")
@@ -46,14 +47,14 @@ public class ZookeeperController {
         return serverService.getServerList(addresses);
     }
 
-    @GetMapping("/nodetree/{address}")
+    @GetMapping("/nodetree/{addresses}")
     @ApiOperation(value = "获取 zk 节点树")
-    public CommonResult getServerTree(@PathVariable("address") String address) throws Exception {
+    public CommonResult getServerTree(@PathVariable("addresses") String addresses) throws Exception {
 
-        nowAddress = address;
-        System.out.println(address);
+        nowAddress = addresses;
+        System.out.println(addresses);
 
-        return serverService.getServerTree(address);
+        return serverService.getServerTree(addresses);
     }
 
     @DeleteMapping("/quit")
@@ -70,44 +71,25 @@ public class ZookeeperController {
     @GetMapping("node")
     @ApiOperation(value = "查询节点")
     public CommonResult queryNode(@RequestParam(value = "path") String path) throws Exception {
-        CommonResult commonResult = new CommonResult();
-        commonResult.setData(nodeService.select(path));
-        commonResult.setCode(200);
-        commonResult.setMsg("Success");
-        return commonResult;
+        return nodeService.select(path);
     }
 
     @PostMapping("node")
     @ApiOperation(value = "增加节点")
     public CommonResult addNode(Node node) throws Exception {
-        nodeService.add(node);
-
-        CommonResult commonResult = new CommonResult();
-        commonResult.setCode(200);
-        commonResult.setMsg("Success");
-        return commonResult;
+        return nodeService.add(node);
     }
 
     @DeleteMapping("node")
     @ApiOperation(value = "删除节点")
     public CommonResult deleteNode(@RequestParam(value = "path") String path) throws Exception {
-        String msg = nodeService.delete(path);
-
-        CommonResult commonResult = new CommonResult();
-        commonResult.setCode(200);
-        commonResult.setMsg(msg);
-        return commonResult;
+        return nodeService.delete(path);
     }
 
     @PutMapping("node")
     @ApiOperation(value = "改动节点")
     public CommonResult modifyNode(HttpServletRequest request) throws Exception {
-        String msg = nodeService.update(request.getParameter("path"), request.getParameter("value"));
-
-        CommonResult commonResult = new CommonResult();
-        commonResult.setCode(200);
-        commonResult.setMsg(msg);
-        return commonResult;
+        return nodeService.update(request.getParameter("path"), request.getParameter("value"));
     }
 
 }
