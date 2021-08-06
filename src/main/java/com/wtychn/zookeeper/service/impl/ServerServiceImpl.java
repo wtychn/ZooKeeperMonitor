@@ -2,7 +2,6 @@ package com.wtychn.zookeeper.service.impl;
 
 import com.wtychn.zookeeper.Utils.GetAllNode;
 import com.wtychn.zookeeper.Utils.ZooKeeperUtil;
-import com.wtychn.zookeeper.Watcher.NodeWatcher;
 import com.wtychn.zookeeper.controller.ZookeeperController;
 import com.wtychn.zookeeper.pojo.CommonResult;
 import com.wtychn.zookeeper.pojo.ServerInfo;
@@ -16,8 +15,6 @@ import java.util.List;
 
 @Service
 public class ServerServiceImpl implements ServerService {
-
-    public static Thread watcherThread;
 
     @Override
     public CommonResult getServerList(String addresses) throws IOException, InterruptedException {
@@ -60,16 +57,11 @@ public class ServerServiceImpl implements ServerService {
 
         if (ZookeeperController.client == null) {
             zooKeeperUtil.connect(address);
-            System.out.println("zookeeper 服务器连接成功！");
-            zooKeeperUtil.register();
+            zooKeeperUtil.sessionConnectionWatcherRegister();
+            zooKeeperUtil.nodeWatcherRegister();
         }
 
         ServerTree root = transfer(new GetAllNode().ls("/"));
-
-        if (watcherThread == null) {
-            watcherThread = new Thread(new NodeWatcher());
-            watcherThread.start();
-        }
 
         CommonResult commonResult = new CommonResult();
         commonResult.setCode(200);

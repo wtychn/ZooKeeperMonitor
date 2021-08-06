@@ -1,10 +1,13 @@
 package com.wtychn.zookeeper.Utils;
 
+import com.wtychn.zookeeper.Watcher.NodeWatcher;
 import com.wtychn.zookeeper.Watcher.SessionConnectionWatcher;
 import com.wtychn.zookeeper.controller.ZookeeperController;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.cache.CuratorCache;
+import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 
@@ -21,9 +24,10 @@ public class ZooKeeperUtil {
                 .retryPolicy(retryPolicy)
                 .build();
         ZookeeperController.client.start();
+        System.out.println("zookeeper 服务器连接成功！");
     }
 
-    public void register() {
+    public void sessionConnectionWatcherRegister() {
         CuratorFramework client = ZookeeperController.client;
         try {
             String rootPath = "/services";
@@ -45,5 +49,21 @@ public class ZooKeeperUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void nodeWatcherRegister() {
+        CuratorFramework client = ZookeeperController.client;
+
+        CuratorCache curatorCache = CuratorCache
+                .builder(client, "/")
+                .build();
+        curatorCache.start();
+        CuratorCacheListener listener = CuratorCacheListener
+                .builder()
+                .forTreeCache(client, new NodeWatcher())
+                .build();
+        curatorCache.listenable().addListener(listener);
+
+        System.out.println("节点监听部署完成！");
     }
 }
