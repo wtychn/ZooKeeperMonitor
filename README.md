@@ -1,15 +1,22 @@
 # Zookeeper 监控项目文档
 
-## 接口及参数
+## 1. 需求及完成度
 
-| 接口名           | HTTP 方法      | 参数                                 | 状态 | 备注                                |
-| ---------------- | -------------- | ------------------------------------ | ---- | ----------------------------------- |
-| /retestadd       | post           |                                      | 弃用 | A122.51.129.180:2182 websocket 测试 |
-| /retestmin       | post           |                                      | 弃用 | M122.51.129.180:2182 websocket 测试 |
-| /server          | post -> get    | ServerLogin 对象 -> String addresses | 修改 | 获取 zookeeper 服务器信息           |
-| /serverTree      | post -> get    | String addresses                     | 修改 | 获取 zookeeper 节点信息             |
-| /query -> /node  | post -> get    | String addresses                     | 修改 | 查询节点信息                        |
-| /add -> /node    | post -> get    | String addresses                     | 修改 | 新增节点                            |
-| /delete -> /node | post -> delete | String addresses                     | 修改 | 删除节点                            |
-| /modify -> /node | post -> put    | String addresses                     | 修改 | 更新节点                            |
+利用API实现一个zookeeper内容浏览器(客户端方式或浏览器方式均可)
+
+- [x] 能够连接到zookeeper集群并可视化展示节点数据；
+- [x] 能够通过界面修改zookeeper节点数据；
+- [x] 能够通过事件监听方式及时刷新节点信息（不允简单许轮询实现）；
+- [ ] 能够主动发现zookeeper集群的动态变化（重新选举、增加或者减少节点，节点故障等）；
+
+## 2. 接口及参数
+
+| 接口名      | HTTP 方法 | 参数                      | 参数传递方式 | 状态       | 备注                    |
+| ----------- | --------- | ------------------------- | ------------ | ---------- | ----------------------- |
+| /serverTree | get       | String addresses          | URL 拼接     | 完成       | 获取 zookeeper 节点信息 |
+| /quit       | delete    |                           |              | 前端待完善 | 断开当前集群连接        |
+| /node       | get       | String path               | URL 拼接     | 完成       | 查询节点信息            |
+| /node       | post      | Node node                 | 表单数据     | 完成       | 新增节点                |
+| /node       | delete    | String path               | URL 拼接     | 完成       | 删除节点                |
+| /node       | put       | String path, String value | 表单数据     | 完成       | 更新节点                |
 

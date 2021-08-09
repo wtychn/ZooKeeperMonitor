@@ -1,7 +1,7 @@
 package com.wtychn.zookeeper.controller;
 
-import com.wtychn.zookeeper.pojo.Node;
 import com.wtychn.zookeeper.pojo.CommonResult;
+import com.wtychn.zookeeper.pojo.Node;
 import com.wtychn.zookeeper.service.NodeService;
 import com.wtychn.zookeeper.service.ServerService;
 import io.swagger.annotations.Api;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Objects;
 
 @RestController
 @Api(value = "zookeeper 监控")
@@ -60,6 +59,7 @@ public class ZookeeperController {
     @DeleteMapping("/quit")
     @ApiOperation(value = "断开当前连接")
     public CommonResult quitConnection() {
+        client.close();
         client = null;
 
         CommonResult commonResult = new CommonResult();
