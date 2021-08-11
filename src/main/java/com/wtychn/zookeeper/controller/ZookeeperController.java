@@ -4,9 +4,11 @@ import com.wtychn.zookeeper.pojo.CommonResult;
 import com.wtychn.zookeeper.pojo.Node;
 import com.wtychn.zookeeper.service.NodeService;
 import com.wtychn.zookeeper.service.ServerService;
+import com.wtychn.zookeeper.utils.ZooKeeperUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.curator.framework.CuratorFramework;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,13 +19,12 @@ import java.io.IOException;
 @Api(value = "zookeeper 监控")
 public class ZookeeperController {
 
-    public static CuratorFramework client;
-    public static String nowAddress;
-
     @Autowired
     private ServerService serverService;
     @Autowired
     private NodeService nodeService;
+
+    Logger logger = LoggerFactory.getLogger(getClass());
 
 //    @RequestMapping("/retestadd")
 //    public String index() throws IOException {
@@ -50,8 +51,8 @@ public class ZookeeperController {
     @ApiOperation(value = "获取 zk 节点树")
     public CommonResult getServerTree(@PathVariable("addresses") String addresses) throws Exception {
 
-        nowAddress = addresses;
-        System.out.println(addresses);
+        ZooKeeperUtil.nowAddress = addresses;
+        logger.info("访问地址：{}", addresses);
 
         return serverService.getServerTree(addresses);
     }
@@ -59,13 +60,8 @@ public class ZookeeperController {
     @DeleteMapping("/quit")
     @ApiOperation(value = "断开当前连接")
     public CommonResult quitConnection() {
-        client.close();
-        client = null;
 
-        CommonResult commonResult = new CommonResult();
-        commonResult.setCode(200);
-        commonResult.setMsg("Success");
-        return commonResult;
+        return serverService.quitServer();
     }
 
     @GetMapping("node")

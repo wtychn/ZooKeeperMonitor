@@ -1,10 +1,6 @@
-package com.wtychn.zookeeper.Utils;
-
-import com.wtychn.zookeeper.controller.ZookeeperController;
-import org.apache.zookeeper.ZooKeeper;
+package com.wtychn.zookeeper.utils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class GetAllNode {
@@ -17,7 +13,7 @@ public class GetAllNode {
 
     private void listChildren(String path) throws Exception {
         directory.add(path);
-        List<String> list = ZookeeperController.client
+        List<String> list = ZooKeeperUtil.client
                 .getChildren()
                 .forPath(path);
         //判断是否有子节点

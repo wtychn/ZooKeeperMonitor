@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @ApiModel(value = "服务器信息")
 public class ServerInfo {
 
-    private String adress;
+    private String address;
 
     private String nodeRole;
 

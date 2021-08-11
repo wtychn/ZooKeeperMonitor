@@ -2,81 +2,78 @@ package com.wtychn.zookeeper.service.impl;
 
 import com.wtychn.zookeeper.pojo.CommonResult;
 import com.wtychn.zookeeper.pojo.Node;
-import com.wtychn.zookeeper.controller.ZookeeperController;
 import com.wtychn.zookeeper.service.NodeService;
+import com.wtychn.zookeeper.utils.ZooKeeperUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class NodeServiceImpl implements NodeService {
 
+    Logger logger = LoggerFactory.getLogger(getClass());
+
     @Override
     public CommonResult add(Node node) throws Exception {
-        System.out.println("新增节点：" + node.getPath());
+        logger.info("新增节点：" + node.getPath());
         CommonResult commonResult = new CommonResult();
 
-        ZookeeperController.client
+        ZooKeeperUtil.client
                 .create()
                 .creatingParentsIfNeeded()
                 .forPath(node.getPath(), node.getValue().getBytes());
 
-        commonResult.setCode(200);
-        commonResult.setMsg("Success");
+        commonResult.setStatus(CommonResult.Stat.SUCCESS);
         return commonResult;
     }
 
     @Override
     public CommonResult delete(String path) throws Exception {
-        System.out.println("删除节点: " + path);
+        logger.info("删除节点: " + path);
         CommonResult commonResult = new CommonResult();
 
-        if (ZookeeperController.client.checkExists().forPath(path) == null) {
-            commonResult.setCode(404);
-            commonResult.setMsg("节点不存在！");
+        if (ZooKeeperUtil.client.checkExists().forPath(path) == null) {
+            commonResult.setStatus(CommonResult.Stat.NOT_FOUND);
         }
 
-        ZookeeperController.client
+        ZooKeeperUtil.client
                 .delete()
                 .deletingChildrenIfNeeded()
                 .forPath(path);
-        commonResult.setCode(200);
-        commonResult.setMsg("Success");
+        commonResult.setStatus(CommonResult.Stat.SUCCESS);
 
         return commonResult;
     }
 
     @Override
     public CommonResult update(String path, String value) throws Exception {
-        System.out.println("更新节点 " + path + " 值为：" + value);
+        logger.info("更新节点 " + path + " 值为：" + value);
         CommonResult commonResult = new CommonResult();
 
-        if (ZookeeperController.client.checkExists().forPath(path) == null) {
-            commonResult.setCode(404);
-            commonResult.setMsg("节点不存在！");
+        if (ZooKeeperUtil.client.checkExists().forPath(path) == null) {
+            commonResult.setStatus(CommonResult.Stat.NOT_FOUND);
         }
 
-        ZookeeperController.client
+        ZooKeeperUtil.client
                 .setData()
                 .forPath(path, value.getBytes());
-        commonResult.setCode(200);
-        commonResult.setMsg("Success");
+        commonResult.setStatus(CommonResult.Stat.SUCCESS);
 
         return commonResult;
     }
 
     @Override
     public CommonResult select(String path) throws Exception {
-        System.out.println("查询节点:" + path);
+        logger.info("查询节点:" + path);
         CommonResult commonResult = new CommonResult();
 
-        if (ZookeeperController.client.checkExists().forPath(path) == null) {
-            commonResult.setCode(404);
-            commonResult.setMsg("节点不存在！");
+        if (ZooKeeperUtil.client.checkExists().forPath(path) == null) {
+            commonResult.setStatus(CommonResult.Stat.NOT_FOUND);
         }
 
-        byte[] bytes = ZookeeperController.client.getData().forPath(path);
+        byte[] bytes = ZooKeeperUtil.client.getData().forPath(path);
 
-        commonResult.setCode(200);
-        commonResult.setMsg("Success");
+        commonResult.setStatus(CommonResult.Stat.SUCCESS);
         commonResult.setData(new String(bytes));
 
         return commonResult;

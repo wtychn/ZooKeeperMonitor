@@ -1,6 +1,8 @@
-package com.wtychn.zookeeper.Utils;
+package com.wtychn.zookeeper.utils;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.OnClose;
@@ -21,12 +23,14 @@ public class WebSocketServer {
     //与某个客户端的连接会话，需要通过它来给客户端发送数据
     private Session session;
 
+    Logger logger = LoggerFactory.getLogger(getClass());
+
     @OnOpen
     public void onOpen(Session session) {
         this.session = session;
         webSocketSet.add(this); //加入set中
         addOnlineCount(); //在线数加1
-        System.out.println("连接成功");
+        logger.info("websocket 连接成功");
     }
 
     @OnClose

@@ -1,14 +1,6 @@
-package com.wtychn.zookeeper.Watcher;
+package com.wtychn.zookeeper.watcher;
 
-import com.wtychn.zookeeper.Utils.WebSocketServer;
-import com.wtychn.zookeeper.controller.ZookeeperController;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
-
-import java.io.IOException;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
 
 public class NowServerWatcher {
     public static ZooKeeper zooKeeper;

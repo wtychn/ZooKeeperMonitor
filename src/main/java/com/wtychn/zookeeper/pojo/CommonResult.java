@@ -11,10 +11,26 @@ import lombok.NoArgsConstructor;
 @ApiModel(value = "返回结果")
 public class CommonResult {
 
-    private int code;
+    private int stat;
 
     private String msg;
 
     private Object data;
+
+    public void setStatus(Stat stat) {
+        this.stat = stat.code;
+        this.msg = stat.msg;
+    }
+
+    @AllArgsConstructor
+    public enum Stat {
+
+        SUCCESS(200, "Success"), NOT_FOUND(404, "Not found");
+
+        private final int code;
+
+        private final String msg;
+
+    }
 
 }

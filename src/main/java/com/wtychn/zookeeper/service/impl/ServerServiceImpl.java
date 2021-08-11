@@ -1,7 +1,7 @@
 package com.wtychn.zookeeper.service.impl;
 
-import com.wtychn.zookeeper.Utils.GetAllNode;
-import com.wtychn.zookeeper.Utils.ZooKeeperUtil;
+import com.wtychn.zookeeper.utils.GetAllNode;
+import com.wtychn.zookeeper.utils.ZooKeeperUtil;
 import com.wtychn.zookeeper.controller.ZookeeperController;
 import com.wtychn.zookeeper.pojo.CommonResult;
 import com.wtychn.zookeeper.pojo.ServerInfo;
@@ -44,8 +44,7 @@ public class ServerServiceImpl implements ServerService {
 //        }
 
         CommonResult commonResult = new CommonResult();
-        commonResult.setCode(200);
-        commonResult.setMsg("Success");
+        commonResult.setStatus(CommonResult.Stat.SUCCESS);
         commonResult.setData(serverlist);
 
         return commonResult;
@@ -53,20 +52,28 @@ public class ServerServiceImpl implements ServerService {
 
     @Override
     public CommonResult getServerTree(String address) throws Exception {
-        ZooKeeperUtil zooKeeperUtil = new ZooKeeperUtil();
 
-        if (ZookeeperController.client == null) {
-            zooKeeperUtil.connect(address);
-            zooKeeperUtil.sessionConnectionWatcherRegister();
-            zooKeeperUtil.nodeWatcherRegister();
+        if (ZooKeeperUtil.client == null) {
+            ZooKeeperUtil.connect(address);
+            ZooKeeperUtil.sessionConnectionWatcherRegister();
+            ZooKeeperUtil.nodeWatcherRegister();
         }
 
         ServerTree root = transfer(new GetAllNode().ls("/"));
 
         CommonResult commonResult = new CommonResult();
-        commonResult.setCode(200);
-        commonResult.setMsg("Success");
+        commonResult.setStatus(CommonResult.Stat.SUCCESS);
         commonResult.setData(root);
+        return commonResult;
+    }
+
+    @Override
+    public CommonResult quitServer() {
+        ZooKeeperUtil.quitConnection();
+
+        CommonResult commonResult = new CommonResult();
+        commonResult.setStatus(CommonResult.Stat.SUCCESS);
+
         return commonResult;
     }
 

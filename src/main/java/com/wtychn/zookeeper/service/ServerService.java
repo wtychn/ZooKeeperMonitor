@@ -9,4 +9,6 @@ public interface ServerService {
     CommonResult getServerList(String addresses) throws IOException, InterruptedException;
 
     CommonResult getServerTree(String address) throws Exception;
+
+    CommonResult quitServer();
 }
