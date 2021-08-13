@@ -16,11 +16,12 @@ public class ServerTree {
     private List<ServerTree> children = new ArrayList<>();
     private int id;
     private int parentId;
+    private String path;
 
-
-    public ServerTree(String label, int id) {
-        this.label = label;
+    public ServerTree(String path, int id) {
+        this.path = path;
         this.id = id;
+        label = path.substring(path.lastIndexOf("/"));
     }
 
 }

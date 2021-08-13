@@ -1,5 +1,6 @@
 package com.wtychn.zookeeper.utils;
 
+import com.wtychn.zookeeper.pojo.ServerInfo;
 import com.wtychn.zookeeper.watcher.NodeWatcher;
 import com.wtychn.zookeeper.watcher.SessionConnectionWatcher;
 import org.apache.curator.RetryPolicy;
@@ -14,13 +15,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class ZooKeeperUtil {
 
     public static CuratorFramework client;
     public static String nowAddress;
+    public static List<ServerInfo> zkList;
 
     private static int baseSleepTimeMs;
 
@@ -31,6 +41,26 @@ public class ZooKeeperUtil {
     private static int connectionTimeoutMs;
 
     static Logger logger = LoggerFactory.getLogger(ZooKeeperUtil.class);
+
+    @Value("${zookeeper.retry.baseSleepTimeMs}")
+    public void setBaseSleepTimeMs(int baseSleepTimeMs) {
+        ZooKeeperUtil.baseSleepTimeMs = baseSleepTimeMs;
+    }
+
+    @Value("${zookeeper.retry.maxRetries}")
+    public void setMaxRetries(int maxRetries) {
+        ZooKeeperUtil.maxRetries = maxRetries;
+    }
+
+    @Value("${zookeeper.connection.sessionTimeoutMs}")
+    public void setSessionTimeoutMs(int sessionTimeoutMs) {
+        ZooKeeperUtil.sessionTimeoutMs = sessionTimeoutMs;
+    }
+
+    @Value("${zookeeper.connection.connectionTimeoutMs}")
+    public void setConnectionTimeoutMs(int connectionTimeoutMs) {
+        ZooKeeperUtil.connectionTimeoutMs = connectionTimeoutMs;
+    }
 
     public static void connect(String addresses) {
 
@@ -88,23 +118,61 @@ public class ZooKeeperUtil {
         client = null;
     }
 
-    @Value("${zookeeper.retry.baseSleepTimeMs}")
-    public void setBaseSleepTimeMs(int baseSleepTimeMs) {
-        ZooKeeperUtil.baseSleepTimeMs = baseSleepTimeMs;
+    private static void getServerInfo(ServerInfo zkServer) {
+        String res;
+        String host = zkServer.getHost();
+        String cmd = "stat";
+        int port = Integer.parseInt(zkServer.getPort());
+        try (
+                Socket sock = new Socket(host, port);
+                OutputStream outStream = sock.getOutputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(sock.getInputStream()))
+        ) {
+            // 通过Zookeeper的四字命令获取服务器的状态
+            outStream.write(cmd.getBytes());
+            outStream.flush();
+            sock.shutdownOutput();
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("Mode: ")) {
+                    res = line.replaceAll("Mode: ", "").trim();
+                    logger.info("[Mode:]{}", res);
+                    /*配置服务器对象*/
+                    zkServer.setStatus("Connected");
+                    zkServer.setMode(res);
+                }
+            }
+        } catch (ConnectException e) {
+            logger.info("[连接已经丢失]");
+            zkServer.setStatus("DisConnected");
+            zkServer.setMode("NULL");
+        } catch (IOException e) {
+            logger.info("IO异常");
+        }
     }
 
-    @Value("${zookeeper.retry.maxRetries}")
-    public void setMaxRetries(int maxRetries) {
-        ZooKeeperUtil.maxRetries = maxRetries;
+    public static List<ServerInfo> getServerInfos() {
+        if(nowAddress == null) return new ArrayList<>();
+        if(zkList == null) zkList = str2Server(nowAddress);
+        for (ServerInfo serverInfo : zkList) {
+            getServerInfo(serverInfo);
+        }
+        return zkList;
     }
 
-    @Value("${zookeeper.connection.sessionTimeoutMs}")
-    public void setSessionTimeoutMs(int sessionTimeoutMs) {
-        ZooKeeperUtil.sessionTimeoutMs = sessionTimeoutMs;
+    public static List<ServerInfo> str2Server(String addresses) {
+        List<ServerInfo> res = new ArrayList<>();
+
+        String[] strings = addresses.split(",");
+        for (String s : strings) {
+            ServerInfo serverInfo = new ServerInfo();
+            String[] hostPort = s.split(":");
+            serverInfo.setHost(hostPort[0]);
+            serverInfo.setPort(hostPort[1]);
+            res.add(serverInfo);
+        }
+        return res;
     }
 
-    @Value("${zookeeper.connection.connectionTimeoutMs}")
-    public void setConnectionTimeoutMs(int connectionTimeoutMs) {
-        ZooKeeperUtil.connectionTimeoutMs = connectionTimeoutMs;
-    }
 }

@@ -17,35 +17,13 @@ import java.util.List;
 public class ServerServiceImpl implements ServerService {
 
     @Override
-    public CommonResult getServerList(String addresses) throws IOException, InterruptedException {
-//        String[] addressList = addresses.split(",");
-        List<ServerInfo> serverlist = new ArrayList<>();
-//        for (int i = 0; i < addressList.length; i++) {
-//            serverlist.add(new ServerInfo());
-//            serverlist.get(i).setAdress(addressList[i]);
-//            serverlist.get(i).setClusterState("normal");
-//            String[] hostPort = addressList[i].split(":");
-//            // 计数器对象
-//            CountDownLatch countDownLatch = new CountDownLatch(1);
-//            int curIdx = i;
-//            new ZooKeeper(addressList[curIdx], 5000, event -> {
-//                if (event.getState().equals(Watcher.Event.KeeperState.SyncConnected)) {
-//                    serverlist.get(curIdx).setNodeState("on service");
-//                    if (event.getState().equals(Watcher.Event.KeeperState.Disconnected)) {
-//                        serverlist.get(curIdx).setNodeState("off line");
-//                    }
-//                    countDownLatch.countDown();
-//                }
-//            });
-//            // 主线程阻塞等待连接对象的创建成功
-//            countDownLatch.await();
-//
-//            serverlist.get(i).setNodeRole(ZookeeperUtils.serverStatus(hostPort[0], hostPort[1]));
-//        }
+    public CommonResult getServerList() {
+
+        List<ServerInfo> serverInfos = ZooKeeperUtil.getServerInfos();
 
         CommonResult commonResult = new CommonResult();
         commonResult.setStatus(CommonResult.Stat.SUCCESS);
-        commonResult.setData(serverlist);
+        commonResult.setData(serverInfos);
 
         return commonResult;
     }

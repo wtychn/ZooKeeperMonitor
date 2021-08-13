@@ -26,25 +26,11 @@ public class ZookeeperController {
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
-//    @RequestMapping("/retestadd")
-//    public String index() throws IOException {
-//        System.out.println("test");
-//        WebSocketServer.sendInfo("A122.51.129.180:2182");
-//        return "helloword!";
-//    }
-//
-//    @RequestMapping("/retestmin")
-//    public String index1() throws IOException {
-//        System.out.println("test");
-//        WebSocketServer.sendInfo("M122.51.129.180:2182");
-//        return "helloword!";
-//    }
-
-    @GetMapping("/server/{addresses}")
+    @GetMapping("/servers")
     @ApiOperation(value = "获取 zk 服务器信息")
-    public CommonResult serverinfo(@PathVariable("addresses") String addresses) throws IOException, InterruptedException {
-        System.out.println(addresses);
-        return serverService.getServerList(addresses);
+    public CommonResult serverinfo() throws IOException, InterruptedException {
+        logger.info("获取服务器信息");
+        return serverService.getServerList();
     }
 
     @GetMapping("/nodetree/{addresses}")

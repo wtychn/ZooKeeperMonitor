@@ -6,11 +6,17 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class Node {
 
     private String address;
     private String path;
     private String value;
+    private String showPath;
 
+    public Node(String address, String path, String value, String showPath) {
+        this.address = address;
+        this.path = path;
+        this.value = value;
+        this.showPath = path.substring(path.lastIndexOf("/"));
+    }
 }

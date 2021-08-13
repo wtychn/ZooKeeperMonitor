@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public interface ServerService {
 
-    CommonResult getServerList(String addresses) throws IOException, InterruptedException;
+    CommonResult getServerList() throws IOException, InterruptedException;
 
     CommonResult getServerTree(String address) throws Exception;
 

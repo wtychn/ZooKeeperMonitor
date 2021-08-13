@@ -1,61 +1,51 @@
 package com.wtychn.zookeeper.watcher;
 
-import org.apache.zookeeper.ZooKeeper;
+import com.wtychn.zookeeper.pojo.ServerInfo;
+import com.wtychn.zookeeper.utils.WebSocketServer;
+import com.wtychn.zookeeper.utils.ZooKeeperUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+@Configuration
+@EnableScheduling
 public class NowServerWatcher {
-    public static ZooKeeper zooKeeper;
-    public static Boolean v = true;
 
-//    public static void nowServer() throws KeeperException, InterruptedException, IOException {
-//        // arg1:节点的路径
-//        // arg2:使用连接对象中的watcher
-//        CountDownLatch countDownLatch = new CountDownLatch(1);
-//        zooKeeper = new ZooKeeper(ZookeeperController.nowAddress, Integer.MAX_VALUE, event -> {
-//            System.out.println("连接对象的参数!");
-//            // 连接成功
-//            if (event.getState() == Watcher.Event.KeeperState.Disconnected) {
-//
-//                System.out.println("服务器下线");
-//                v = false;
-//                String[] temp = ZookeeperController.nowAddress.split(":");
-//                try {
-//                    if (Objects.equals(ZookeeperUtils.serverStatus(temp[0], temp[1]), "leader")) {
-//                        System.out.println("集群leader节点已失去连接，可能进入选举状态");
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                // zooKeeper=new ZooKeeper("122.51.129.180:2181", Integer.MAX_VALUE,this::process);
-//
-//            }
-//            if (event.getState() == Watcher.Event.KeeperState.SyncConnected) {
-//                if (v) {
-//                    System.out.println("服务器上线");
-//                } else {
-//                    try {
-//                        WebSocketServer.sendInfo("Reconnected");
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                    System.out.println("服务器重连");
-//                    v = true;
-//                }
-//            }
-//
-//            countDownLatch.countDown();
-//            try {
-//                zooKeeper.exists("/", true);
-//
-//            } catch (Exception ex) {
-//                ex.printStackTrace();
-//            }
-//
-//        });
-//        countDownLatch.await();
-//
-//        zooKeeper.exists("/", true);
-//
-//        Thread.sleep(Integer.MAX_VALUE);
-//        System.out.println("结束");
-//    }
+    Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Scheduled(cron = "0/5 * * * * ?")
+    public void zkServerWatch() throws IOException, ClassNotFoundException {
+        List<ServerInfo> oldList = ZooKeeperUtil.zkList == null ?
+                new ArrayList<>() :
+                deepCopy(ZooKeeperUtil.zkList);
+
+        // 更新zkList(zk服务信息)
+        List<ServerInfo> newList = ZooKeeperUtil.getServerInfos();
+
+        // 对比更新前与更新后的zkList,有变化则说明服务器状态更改,发送websocket请求
+        for (int i = 0; i < newList.size(); i++) {
+            if (oldList.size() != newList.size() || !oldList.get(i).equals(newList.get(i))) {
+                WebSocketServer.sendInfo("ServerStatChanged");
+                logger.info("[服务器状态更改]");
+                break;
+            }
+        }
+    }
+
+    private <T> List<T> deepCopy(List<T> src) throws IOException, ClassNotFoundException
+    {
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(byteOut);
+        out.writeObject(src);
+        ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
+        ObjectInputStream in = new ObjectInputStream(byteIn);
+        return (List<T>)in.readObject();
+    }
 }
