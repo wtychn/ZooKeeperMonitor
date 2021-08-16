@@ -1,20 +1,33 @@
 package com.wtychn.zookeeper.service.impl;
 
-import com.wtychn.zookeeper.utils.GetAllNode;
-import com.wtychn.zookeeper.utils.ZooKeeperUtil;
-import com.wtychn.zookeeper.controller.ZookeeperController;
 import com.wtychn.zookeeper.pojo.CommonResult;
 import com.wtychn.zookeeper.pojo.ServerInfo;
 import com.wtychn.zookeeper.pojo.ServerTree;
 import com.wtychn.zookeeper.service.ServerService;
+import com.wtychn.zookeeper.utils.GetAllNode;
+import com.wtychn.zookeeper.utils.ZooKeeperUtil;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class ServerServiceImpl implements ServerService {
+
+    @Override
+    public CommonResult getServerList(int page, int pageSize) {
+        List<ServerInfo> pageInfo;
+        int start = (page - 1) * pageSize;
+        int end = start + pageSize;
+        pageInfo = ZooKeeperUtil.zkList
+                .subList(start, Math.min(ZooKeeperUtil.zkList.size(), end));
+
+        CommonResult commonResult = new CommonResult();
+        commonResult.setStatus(CommonResult.Stat.SUCCESS);
+        commonResult.setData(pageInfo);
+
+        return commonResult;
+    }
 
     @Override
     public CommonResult getServerList() {

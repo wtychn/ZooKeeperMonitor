@@ -14,16 +14,22 @@ public class NodeServiceImpl implements NodeService {
     Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public CommonResult add(Node node) throws Exception {
+    public CommonResult add(Node node) {
         logger.info("新增节点：" + node.getPath());
         CommonResult commonResult = new CommonResult();
 
-        ZooKeeperUtil.client
-                .create()
-                .creatingParentsIfNeeded()
-                .forPath(node.getPath(), node.getValue().getBytes());
+        try {
+            ZooKeeperUtil.client
+                    .create()
+                    .creatingParentsIfNeeded()
+                    .forPath(node.getPath(), node.getValue().getBytes());
 
-        commonResult.setStatus(CommonResult.Stat.SUCCESS);
+            commonResult.setStatus(CommonResult.Stat.SUCCESS);
+        } catch (Exception e) {
+            commonResult.setStatus(CommonResult.Stat.UNAUTHORIZED);
+            e.printStackTrace();
+        }
+
         return commonResult;
     }
 
@@ -36,11 +42,17 @@ public class NodeServiceImpl implements NodeService {
             commonResult.setStatus(CommonResult.Stat.NOT_FOUND);
         }
 
-        ZooKeeperUtil.client
-                .delete()
-                .deletingChildrenIfNeeded()
-                .forPath(path);
-        commonResult.setStatus(CommonResult.Stat.SUCCESS);
+        try {
+            ZooKeeperUtil.client
+                    .delete()
+                    .deletingChildrenIfNeeded()
+                    .forPath(path);
+
+            commonResult.setStatus(CommonResult.Stat.SUCCESS);
+        } catch (Exception e) {
+            commonResult.setStatus(CommonResult.Stat.UNAUTHORIZED);
+            e.printStackTrace();
+        }
 
         return commonResult;
     }
@@ -54,10 +66,16 @@ public class NodeServiceImpl implements NodeService {
             commonResult.setStatus(CommonResult.Stat.NOT_FOUND);
         }
 
-        ZooKeeperUtil.client
-                .setData()
-                .forPath(path, value.getBytes());
-        commonResult.setStatus(CommonResult.Stat.SUCCESS);
+        try {
+            ZooKeeperUtil.client
+                    .setData()
+                    .forPath(path, value.getBytes());
+
+            commonResult.setStatus(CommonResult.Stat.SUCCESS);
+        } catch (Exception e) {
+            commonResult.setStatus(CommonResult.Stat.UNAUTHORIZED);
+            e.printStackTrace();
+        }
 
         return commonResult;
     }

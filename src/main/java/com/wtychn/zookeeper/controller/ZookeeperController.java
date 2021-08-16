@@ -26,11 +26,18 @@ public class ZookeeperController {
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
-    @GetMapping("/servers")
-    @ApiOperation(value = "获取 zk 服务器信息")
-    public CommonResult serverinfo() throws IOException, InterruptedException {
+//    @GetMapping("servers")
+//    @ApiOperation(value = "获取 zk 服务器信息")
+//    public CommonResult serverinfo() throws IOException, InterruptedException {
+//        logger.info("获取服务器信息");
+//        return serverService.getServerList();
+//    }
+
+    @GetMapping("servers")
+    @ApiOperation(value = "获取 zk 服务器分页信息")
+    public CommonResult serverinfo(@RequestParam(value = "page") int page, @RequestParam(value = "pageSize") int pageSize) throws IOException, InterruptedException {
         logger.info("获取服务器信息");
-        return serverService.getServerList();
+        return serverService.getServerList(page, pageSize);
     }
 
     @GetMapping("/nodetree/{addresses}")
@@ -43,7 +50,7 @@ public class ZookeeperController {
         return serverService.getServerTree(addresses);
     }
 
-    @DeleteMapping("/quit")
+    @DeleteMapping("quit")
     @ApiOperation(value = "断开当前连接")
     public CommonResult quitConnection() {
 

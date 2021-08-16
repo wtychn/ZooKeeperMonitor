@@ -25,7 +25,9 @@ public class CommonResult {
     @AllArgsConstructor
     public enum Stat {
 
-        SUCCESS(200, "Success"), NOT_FOUND(404, "Not found");
+        SUCCESS(200, "Success"),
+        NOT_FOUND(404, "Not found"),
+        UNAUTHORIZED(401, "Unauthorized");
 
         private final int code;
 
