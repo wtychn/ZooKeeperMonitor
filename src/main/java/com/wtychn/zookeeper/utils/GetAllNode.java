@@ -12,6 +12,7 @@ public class GetAllNode {
     }
 
     private void listChildren(String path) throws Exception {
+        if(ZooKeeperUtil.client == null) return;
         directory.add(path);
         List<String> list = ZooKeeperUtil.client
                 .getChildren()

@@ -1,0 +1,20 @@
+server:
+  port: 8081
+  tomcat:
+    uri-encoding: UTF-8
+
+swagger:
+  enabled: true
+
+zookeeper:
+  retry:
+    baseSleepTimeMs: 50000
+    maxRetries: 3
+  connection:
+    sessionTimeoutMs: 50000
+    connectionTimeoutMs: 50000
+
+watcher:
+  corePoolSize: 2
+  maximumPoolSize: 6
+  keepAliveTime: 3

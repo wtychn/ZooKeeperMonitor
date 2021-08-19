@@ -10,7 +10,7 @@ public interface ServerService {
 
     CommonResult getServerList() throws IOException, InterruptedException;
 
-    CommonResult getServerTree(String address) throws Exception;
+    CommonResult getServerTree() throws Exception;
 
     CommonResult quitServer();
 }

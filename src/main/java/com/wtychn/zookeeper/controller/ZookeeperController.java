@@ -26,34 +26,33 @@ public class ZookeeperController {
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
-//    @GetMapping("servers")
-//    @ApiOperation(value = "获取 zk 服务器信息")
-//    public CommonResult serverinfo() throws IOException, InterruptedException {
-//        logger.info("获取服务器信息");
-//        return serverService.getServerList();
-//    }
+    @GetMapping("/allServers/{addresses}")
+    @ApiOperation(value = "获取 zk 服务器信息")
+    public CommonResult getAllServerInfo(@PathVariable("addresses") String addresses) throws IOException, InterruptedException {
+        logger.info("获取服务器信息");
+        ZooKeeperUtil.nowAddress = addresses;
+        logger.info("访问地址：{}", addresses);
+        return serverService.getServerList();
+    }
 
     @GetMapping("servers")
     @ApiOperation(value = "获取 zk 服务器分页信息")
-    public CommonResult serverinfo(@RequestParam(value = "page") int page, @RequestParam(value = "pageSize") int pageSize) throws IOException, InterruptedException {
-        logger.info("获取服务器信息");
+    public CommonResult getPageServerInfo(@RequestParam(value = "page") int page, @RequestParam(value = "pageSize") int pageSize) throws IOException, InterruptedException {
+        logger.info("获取服务器分页信息");
         return serverService.getServerList(page, pageSize);
     }
 
-    @GetMapping("/nodetree/{addresses}")
+    @GetMapping("nodetree")
     @ApiOperation(value = "获取 zk 节点树")
-    public CommonResult getServerTree(@PathVariable("addresses") String addresses) throws Exception {
-
-        ZooKeeperUtil.nowAddress = addresses;
-        logger.info("访问地址：{}", addresses);
-
-        return serverService.getServerTree(addresses);
+    public CommonResult getServerTree() throws Exception {
+        logger.info("获取节点信息");
+        return serverService.getServerTree();
     }
 
     @DeleteMapping("quit")
     @ApiOperation(value = "断开当前连接")
     public CommonResult quitConnection() {
-
+        logger.info("断开连接");
         return serverService.quitServer();
     }
 

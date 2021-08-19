@@ -6,6 +6,7 @@ import com.wtychn.zookeeper.pojo.ServerTree;
 import com.wtychn.zookeeper.service.ServerService;
 import com.wtychn.zookeeper.utils.GetAllNode;
 import com.wtychn.zookeeper.utils.ZooKeeperUtil;
+import com.wtychn.zookeeper.watcher.NowServerWatcher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -16,15 +17,10 @@ public class ServerServiceImpl implements ServerService {
 
     @Override
     public CommonResult getServerList(int page, int pageSize) {
-        List<ServerInfo> pageInfo;
-        int start = (page - 1) * pageSize;
-        int end = start + pageSize;
-        pageInfo = ZooKeeperUtil.zkList
-                .subList(start, Math.min(ZooKeeperUtil.zkList.size(), end));
 
         CommonResult commonResult = new CommonResult();
         commonResult.setStatus(CommonResult.Stat.SUCCESS);
-        commonResult.setData(pageInfo);
+        commonResult.setData(ZooKeeperUtil.getServerInfos(page, pageSize));
 
         return commonResult;
     }
@@ -33,6 +29,7 @@ public class ServerServiceImpl implements ServerService {
     public CommonResult getServerList() {
 
         List<ServerInfo> serverInfos = ZooKeeperUtil.getServerInfos();
+        ZooKeeperUtil.registerServerWatcher();
 
         CommonResult commonResult = new CommonResult();
         commonResult.setStatus(CommonResult.Stat.SUCCESS);
@@ -42,10 +39,11 @@ public class ServerServiceImpl implements ServerService {
     }
 
     @Override
-    public CommonResult getServerTree(String address) throws Exception {
+    public CommonResult getServerTree() throws Exception {
 
         if (ZooKeeperUtil.client == null) {
-            ZooKeeperUtil.connect(address);
+            while (ZooKeeperUtil.nowAddress == null) {};
+            ZooKeeperUtil.connect(ZooKeeperUtil.nowAddress);
             ZooKeeperUtil.sessionConnectionWatcherRegister();
             ZooKeeperUtil.nodeWatcherRegister();
         }

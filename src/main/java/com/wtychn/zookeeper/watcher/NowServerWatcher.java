@@ -1,51 +1,52 @@
 package com.wtychn.zookeeper.watcher;
 
 import com.wtychn.zookeeper.pojo.ServerInfo;
-import com.wtychn.zookeeper.utils.WebSocketServer;
 import com.wtychn.zookeeper.utils.ZooKeeperUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-@Configuration
-@EnableScheduling
+@Component
+@ConfigurationProperties(prefix = "watcher")
+@Slf4j
+@Getter
+@Setter
 public class NowServerWatcher {
 
-    Logger logger = LoggerFactory.getLogger(getClass());
+    ThreadPoolExecutor threadPoolExecutor;
 
-    @Scheduled(cron = "0/5 * * * * ?")
-    public void zkServerWatch() throws IOException, ClassNotFoundException {
-        List<ServerInfo> oldList = ZooKeeperUtil.zkList == null ?
-                new ArrayList<>() :
-                deepCopy(ZooKeeperUtil.zkList);
+    private int corePoolSize;
 
-        // 更新zkList(zk服务信息)
-        List<ServerInfo> newList = ZooKeeperUtil.getServerInfos();
+    private int maximumPoolSize;
 
-        // 对比更新前与更新后的zkList,有变化则说明服务器状态更改,发送websocket请求
-        for (int i = 0; i < newList.size(); i++) {
-            if (oldList.size() != newList.size() || !oldList.get(i).equals(newList.get(i))) {
-                WebSocketServer.sendInfo("ServerStatChanged");
-                logger.info("[服务器状态更改]");
-                break;
-            }
+    private long keepAliveTime;
+
+    public void startWatch() {
+
+        threadPoolExecutor = new ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTime,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>());
+
+        for (ServerInfo server : ZooKeeperUtil.zkList) {
+            threadPoolExecutor.execute(new ServerWatcherThread(server));
+            log.info("{}:{} 服务器监控线程启动", server.getHost(), server.getPort());
         }
+
     }
 
-    private <T> List<T> deepCopy(List<T> src) throws IOException, ClassNotFoundException
-    {
-        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-        ObjectOutputStream out = new ObjectOutputStream(byteOut);
-        out.writeObject(src);
-        ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
-        ObjectInputStream in = new ObjectInputStream(byteIn);
-        return (List<T>)in.readObject();
+    public void stopWatch() {
+        if(threadPoolExecutor == null) return;
+        threadPoolExecutor.shutdownNow();
     }
+
 }
