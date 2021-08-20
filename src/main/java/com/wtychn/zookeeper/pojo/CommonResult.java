@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ApiModel(value = "返回结果")
+@ApiModel(value = "通用返回结果封装")
 public class CommonResult {
 
     private int stat;

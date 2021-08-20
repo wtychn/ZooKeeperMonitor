@@ -1,11 +1,12 @@
 package com.wtychn.zookeeper.pojo;
 
-import lombok.AllArgsConstructor;
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@ApiModel(value = "znode 节点信息")
 public class Node {
 
     private String address;
