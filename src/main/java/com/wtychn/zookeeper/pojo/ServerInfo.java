@@ -1,5 +1,7 @@
 package com.wtychn.zookeeper.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,6 +16,7 @@ import java.util.Objects;
 @ApiModel(value = "服务器信息")
 public class ServerInfo implements Serializable {
 
+    @TableId(type = IdType.AUTO)
     private int id;
 
     private String host;
@@ -29,7 +32,7 @@ public class ServerInfo implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ServerInfo that = (ServerInfo) o;
-        return id == that.id && Objects.equals(host, that.host) && Objects.equals(port, that.port) && Objects.equals(mode, that.mode) && Objects.equals(status, that.status);
+        return Objects.equals(host, that.host) && Objects.equals(port, that.port) && Objects.equals(mode, that.mode) && Objects.equals(status, that.status);
     }
 
     @Override

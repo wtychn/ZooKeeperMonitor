@@ -2,7 +2,6 @@ package com.wtychn.zookeeper.utils;
 
 import com.wtychn.zookeeper.pojo.ServerInfo;
 import com.wtychn.zookeeper.watcher.NodeWatcher;
-import com.wtychn.zookeeper.watcher.NowServerWatcher;
 import com.wtychn.zookeeper.watcher.SessionConnectionWatcher;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
@@ -12,7 +11,6 @@ import org.apache.curator.framework.recipes.cache.CuratorCache;
 import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -23,16 +21,13 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 @Slf4j
 public class ZooKeeperUtil {
 
     public static CuratorFramework client;
-    public static String nowAddress;
-    public static List<ServerInfo> zkList;
+    public static String nowAddresses;
 
     private static int baseSleepTimeMs;
 
@@ -41,8 +36,6 @@ public class ZooKeeperUtil {
     private static int sessionTimeoutMs;
 
     private static int connectionTimeoutMs;
-
-    private static NowServerWatcher nowServerWatcher;
 
     @Value("${zookeeper.retry.baseSleepTimeMs}")
     public void setBaseSleepTimeMs(int baseSleepTimeMs) {
@@ -62,11 +55,6 @@ public class ZooKeeperUtil {
     @Value("${zookeeper.connection.connectionTimeoutMs}")
     public void setConnectionTimeoutMs(int connectionTimeoutMs) {
         ZooKeeperUtil.connectionTimeoutMs = connectionTimeoutMs;
-    }
-
-    @Autowired
-    public ZooKeeperUtil(NowServerWatcher nowServerWatcher) {
-        ZooKeeperUtil.nowServerWatcher = nowServerWatcher;
     }
 
     /**
@@ -125,18 +113,27 @@ public class ZooKeeperUtil {
     public static void quitConnection() {
         client.close();
         client = null;
-        nowAddress = null;
+        nowAddresses = null;
         cancelServerWatcher();
     }
 
-    public static ServerInfo getServerInfo(ServerInfo zkServer) {
+
+    public static ServerInfo getServerInfo(ServerInfo serverInfo) {
+        ServerInfo result = getServerInfo(serverInfo.getHost(), serverInfo.getPort());
+        result.setId(serverInfo.getId());
+        return result;
+    }
+
+    public static ServerInfo getServerInfo(String address) {
+        String[] hostPort = address.split(":");
+        return getServerInfo(hostPort[0], hostPort[1]);
+    }
+
+    private static ServerInfo getServerInfo(String host, String port) {
         String mode;
-        String host = zkServer.getHost();
-        String port = zkServer.getPort();
         String cmd = "stat";
-        
+
         ServerInfo resInfo = new ServerInfo();
-        resInfo.setId(zkServer.getId());
         resInfo.setHost(host);
         resInfo.setPort(port);
 
@@ -169,53 +166,8 @@ public class ZooKeeperUtil {
         return resInfo;
     }
 
-    public static List<ServerInfo> getServerInfos() {
-        if (nowAddress == null) {
-            return new ArrayList<>();
-        }
-        if (zkList == null) {
-            zkList = str2Server(nowAddress);
-        }
-        
-        for (int i = 0; i < zkList.size(); i++) {
-            zkList.set(i, getServerInfo(zkList.get(i)));
-        }
-        return zkList;
-    }
-
-    public static List<ServerInfo> getServerInfos(int page, int pageSize) {
-        if(nowAddress == null) return new ArrayList<>();
-        if(zkList == null) zkList = str2Server(nowAddress);
-
-        int start = (page - 1) * pageSize;
-        int end = Math.min(ZooKeeperUtil.zkList.size(), start + pageSize);
-        for (int i = start; i < end; i++) {
-            zkList.set(i, getServerInfo(zkList.get(i)));
-        }
-        return zkList.subList(start, end);
-    }
-
-    public static void registerServerWatcher() {
-        nowServerWatcher.startWatch();
-    }
-
     public static void cancelServerWatcher() {
-        nowServerWatcher.stopWatch();
-        nowServerWatcher = null;
-    }
 
-    public static List<ServerInfo> str2Server(String addresses) {
-        List<ServerInfo> res = new ArrayList<>();
-
-        String[] strings = addresses.split(",");
-        for (String s : strings) {
-            ServerInfo serverInfo = new ServerInfo();
-            String[] hostPort = s.split(":");
-            serverInfo.setHost(hostPort[0]);
-            serverInfo.setPort(hostPort[1]);
-            res.add(serverInfo);
-        }
-        return res;
     }
 
 }

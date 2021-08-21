@@ -5,6 +5,8 @@ import com.wtychn.zookeeper.pojo.Node;
 
 public interface NodeService {
 
+    CommonResult getNodeTree() throws Exception;
+
     CommonResult add(Node node) throws Exception;
 
     CommonResult delete(String path) throws Exception;

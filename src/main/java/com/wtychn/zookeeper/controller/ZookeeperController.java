@@ -2,6 +2,7 @@ package com.wtychn.zookeeper.controller;
 
 import com.wtychn.zookeeper.pojo.CommonResult;
 import com.wtychn.zookeeper.pojo.Node;
+import com.wtychn.zookeeper.pojo.ServerInfo;
 import com.wtychn.zookeeper.service.NodeService;
 import com.wtychn.zookeeper.service.ServerService;
 import com.wtychn.zookeeper.utils.ZooKeeperUtil;
@@ -29,16 +30,26 @@ public class ZookeeperController {
     @GetMapping("/allServers/{addresses}")
     @ApiOperation(value = "获取 zk 服务器信息")
     public CommonResult getAllServerInfo(@PathVariable("addresses") String addresses) throws IOException, InterruptedException {
-        logger.info("获取服务器信息");
-        ZooKeeperUtil.nowAddress = addresses;
         logger.info("访问地址：{}", addresses);
-        return serverService.getServerList();
+        ZooKeeperUtil.nowAddresses = addresses;
+        String[] addressList = addresses.split(",");
+
+        serverService.deleteAllServer();
+
+        int i = 1;
+        for (String address : addressList) {
+            ServerInfo server = ZooKeeperUtil.getServerInfo(address);
+            serverService.insertServer(server);
+            serverService.watchServer(i++);
+        }
+
+        return serverService.getAllServerList(addresses.split(","));
     }
 
     @GetMapping("servers")
     @ApiOperation(value = "获取 zk 服务器分页信息")
     public CommonResult getPageServerInfo(@RequestParam(value = "page") int page, @RequestParam(value = "pageSize") int pageSize) throws IOException, InterruptedException {
-        logger.info("获取服务器分页信息");
+        logger.info("获取服务器分页信息, page: {}, pagesize: {}", page, pageSize);
         return serverService.getServerList(page, pageSize);
     }
 
@@ -46,7 +57,7 @@ public class ZookeeperController {
     @ApiOperation(value = "获取 zk 节点树")
     public CommonResult getServerTree() throws Exception {
         logger.info("获取节点信息");
-        return serverService.getServerTree();
+        return nodeService.getNodeTree();
     }
 
     @DeleteMapping("quit")
