@@ -16,7 +16,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -25,9 +27,18 @@ public class ServerServiceImpl implements ServerService {
     @Autowired
     ServerMapper serverMapper;
 
+    Set<Integer> idSet = new HashSet<>();
+    boolean threadSwitch = true;
+
     @Override
     public CommonResult getServerList(int page, int pageSize) {
-        IPage<ServerInfo> serverInfoPage = serverMapper.selectPage(new Page<>(page, pageSize), new QueryWrapper<>());
+        IPage<ServerInfo> serverInfoPage = new Page<>();
+        // 防止数据未写入时查到空数据，自旋等待
+        while (serverInfoPage.getRecords().size() == 0) {
+            serverInfoPage = serverMapper.selectPage(
+                    new Page<>(page, pageSize),
+                    new QueryWrapper<>());
+        }
 
         CommonResult commonResult = new CommonResult();
         commonResult.setStatus(CommonResult.Stat.SUCCESS);
@@ -38,7 +49,7 @@ public class ServerServiceImpl implements ServerService {
 
     @Override
     public CommonResult getAllServerList(String[] addresses) {
-
+        threadSwitch = true;
         List<ServerInfo> serverInfos = serverMapper.selectList(null);
 
         CommonResult commonResult = new CommonResult();
@@ -51,6 +62,9 @@ public class ServerServiceImpl implements ServerService {
     @Override
     public CommonResult quitServer() {
         ZooKeeperUtil.quitConnection();
+
+        idSet.clear();
+        threadSwitch = false;
 
         CommonResult commonResult = new CommonResult();
         commonResult.setStatus(CommonResult.Stat.SUCCESS);
@@ -76,7 +90,16 @@ public class ServerServiceImpl implements ServerService {
     @Async("serverWatcherExecutor")
     @Override
     public void watchServer(int id) throws IOException, InterruptedException {
-        while (true) {
+        // 重复 id 直接返回
+        if (idSet.contains(id)) {
+            return;
+        } else {
+            idSet.add(id);
+        }
+
+        log.info("{} 号监控线程启动", id);
+
+        while (threadSwitch) {
             ServerInfo oldInfo = serverMapper.selectById(id);
             ServerInfo newInfo = ZooKeeperUtil.getServerInfo(oldInfo);
             if (!newInfo.equals(oldInfo)) {

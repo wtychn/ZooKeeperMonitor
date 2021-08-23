@@ -27,9 +27,9 @@ public class ZookeeperController {
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
-    @GetMapping("/allServers/{addresses}")
+    @GetMapping("allServers")
     @ApiOperation(value = "获取 zk 服务器信息")
-    public CommonResult getAllServerInfo(@PathVariable("addresses") String addresses) throws IOException, InterruptedException {
+    public CommonResult getAllServerInfo(@RequestParam(value = "addresses") String addresses) throws IOException, InterruptedException {
         logger.info("访问地址：{}", addresses);
         ZooKeeperUtil.nowAddresses = addresses;
         String[] addressList = addresses.split(",");

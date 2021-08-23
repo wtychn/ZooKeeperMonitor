@@ -57,6 +57,10 @@ public class ZooKeeperUtil {
         ZooKeeperUtil.connectionTimeoutMs = connectionTimeoutMs;
     }
 
+    public static void connect() {
+        connect(nowAddresses);
+    }
+
     /**
      * zk 客户端连接底层逻辑是每隔一秒切换一个 server 的连接
      */

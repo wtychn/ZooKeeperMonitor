@@ -25,7 +25,7 @@ public class NodeServiceImpl implements NodeService {
             while (ZooKeeperUtil.nowAddresses == null) {
             }
 
-            ZooKeeperUtil.connect(ZooKeeperUtil.nowAddresses);
+            ZooKeeperUtil.connect();
             ZooKeeperUtil.sessionConnectionWatcherRegister();
             ZooKeeperUtil.nodeWatcherRegister();
         }

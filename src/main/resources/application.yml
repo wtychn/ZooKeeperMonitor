@@ -72,4 +72,4 @@ watcher:
   maximumPoolSize: 6
   keepAliveTime: 3
   queueCapacity: 6
-  awaitTerminationSeconds: 3
+  awaitTerminationSeconds: 1
