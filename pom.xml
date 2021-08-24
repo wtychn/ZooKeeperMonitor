@@ -8,8 +8,8 @@
         <version>2.3.2.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.example</groupId>
-    <artifactId>demo</artifactId>
+    <groupId>com.wtychn</groupId>
+    <artifactId>ZooKeeperMonitor</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>demo</name>
     <description>Demo project for Spring Boot</description>
@@ -122,7 +122,6 @@
                 </executions>
                 <configuration>
                     <imageName>zk_monitor/${project.artifactId}:${project.version}</imageName>
-                    <dockerHost>http://192.168.3.101:2375</dockerHost>
                     <baseImage>java:8</baseImage>
                     <entryPoint>["java", "-jar", "-Dspring.profiles.active=prod","/${project.build.finalName}.jar"]
                     </entryPoint>
