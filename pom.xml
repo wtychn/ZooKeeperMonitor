@@ -101,7 +101,7 @@
     </dependencies>
 
     <build>
-        <finalName>zk-monitor</finalName>
+        <finalName>zk_monitor</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -121,7 +121,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <imageName>mall/${project.artifactId}:${project.version}</imageName>
+                    <imageName>zk_monitor/${project.artifactId}:${project.version}</imageName>
                     <dockerHost>http://192.168.3.101:2375</dockerHost>
                     <baseImage>java:8</baseImage>
                     <entryPoint>["java", "-jar", "-Dspring.profiles.active=prod","/${project.build.finalName}.jar"]
