@@ -1,0 +1,75 @@
+spring:
+  datasource:
+    druid:
+      url: jdbc:mysql://127.0.0.1:3306/zkservers?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
+      username: root
+      password: root
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      # 开启sql语句自动加载，只认识名为： schema-all.sql和schema.sql和data-all.sql和data.sql的sql语句
+      # initialization-mode: always
+
+      # 连接池的配置信息
+      initialSize: 5
+      minIdle: 5
+      maxActive: 20
+      # 配置获取连接等待超时的时间
+      maxWait: 60000
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      timeBetweenEvictionRunsMillis: 60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      # 打开PSCache，并且指定每个连接上PSCache的大小
+      poolPreparedStatements: true
+      maxPoolPreparedStatementPerConnectionSize: 20
+      useGlobalDataSourceStat: true
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      filters: stat,wall
+
+      #配置监控属性： 在druid-starter的： com.alibaba.druid.spring.boot.autoconfigure.stat包下进行的逻辑配置
+      web-stat-filter: # WebStatFilter配置，
+        enabled: true #默认为false，表示不使用WebStatFilter配置，就是属性名去短线
+        url-pattern: /* #拦截该项目下的一切请求
+        exclusions: /druid/*,*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico  #对这些请求放行
+        session-stat-enable: true
+        principal-session-name: session_name
+        principal-cookie-name: cookie_name
+
+      stat-view-servlet: # StatViewServlet配置
+        enabled: true #默认为false，表示不使用StatViewServlet配置，就是属性名去短线
+        url-pattern: /druid/*  #配置DruidStatViewServlet的访问地址。后台监控页面的访问地址
+        reset-enable: false #禁用HTML页面上的“重置”功能，会把所有监控的数据全部清空，一般不使用
+        login-username: admin #监控页面登录的用户名
+        login-password: 123456 #监控页面登录的密码
+        allow:   #IP白名单(没有配置或者为空，则允许所有访问)。允许谁访问druid后台，默认允许全部用户访问。
+        deny:  #IP黑名单 (存在共同时，deny优先于allow)。不允许谁进行访问druid后台，
+      #Spring监控配置，说明请参考Druid Github Wiki，配置_Druid和Spring关联监控配置
+      aop-patterns: com.wtychn.zookeeper.service.*
+
+server:
+  port: 8081
+  tomcat:
+    uri-encoding: UTF-8
+
+swagger:
+  enabled: false
+
+zookeeper:
+  retry:
+    baseSleepTimeMs: 50000
+    maxRetries: 3
+  connection:
+    sessionTimeoutMs: 50000
+    connectionTimeoutMs: 50000
+
+watcher:
+  corePoolSize: 3
+  maximumPoolSize: 6
+  keepAliveTime: 3
+  queueCapacity: 6
+  awaitTerminationSeconds: 1
